@@ -1,0 +1,38 @@
+## .NET / Visual Studio / Rider
+bin/
+obj/
+out/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+TestResults/
+*.nupkg
+*.snupkg
+
+## Umbraco runtime & local database
+umbraco/Data/
+umbraco/Logs/
+umbraco/mediacache/
+**/umbraco/Data/
+**/umbraco/Logs/
+**/umbraco/mediacache/
+**/wwwroot/media/*
+!**/wwwroot/media/.gitkeep
+appsettings.Local.json
+**/appsettings.Local.json
+**/appsettings-schema*.json
+**/umbraco-package-schema.json
+
+## Node / Vite backoffice client
+node_modules/
+**/node_modules/
+npm-debug.log*
+.DS_Store
+
+## Docker local overrides
+.env
+docker/resourcespace/.env
+docker/resourcespace/config.php

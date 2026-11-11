@@ -1,0 +1,232 @@
+﻿@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@{
+    Layout = null;
+    var subtitle = Model.Value<string>("subtitle");
+    var hero = Model.Value<PublishedDamAsset>("heroAsset");
+    var secondary = Model.Value<PublishedDamAsset>("secondaryAsset");
+    var reportPdf = Model.Value<PublishedDamAsset>("cataloguePdf");
+    var loanAsset = Model.Value<PublishedDamAsset>("loanAsset");
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@Model.Name — Civic Museum (ResourceSpace + Umbraco 17 Demo)</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --ink: #0f172a;
+            --muted: #475569;
+            --surface: #ffffff;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+            --accent: #1d4ed8;
+            --warn-bg: #fff7ed;
+            --warn-border: #fdba74;
+            --warn-ink: #9a3412;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            line-height: 1.6;
+        }
+        .container { max-width: 980px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+        header { margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; }
+        .eyebrow {
+            display: inline-block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        h1 { margin: 0 0 0.5rem; font-size: clamp(1.85rem, 3.5vw, 2.6rem); line-height: 1.15; }
+        .subtitle { margin: 0; font-size: 1.12rem; color: var(--muted); }
+        .hero-card, .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+            margin-bottom: 2rem;
+        }
+        .hero-image, .plate-image {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #e2e8f0;
+        }
+        .meta { padding: 1.15rem 1.4rem; }
+        .meta h2, .meta h3 { margin: 0 0 0.35rem; font-size: 1.15rem; }
+        .meta p { margin: 0.25rem 0; color: var(--muted); font-size: 0.94rem; }
+        .badge-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .badge {
+            font-size: 0.76rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            background: #eff6ff;
+            color: #1e40af;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .pdf-layout { display: flex; gap: 1rem; align-items: flex-start; padding: 1.25rem; }
+        .pdf-thumb { width: 112px; flex-shrink: 0; border: 1px solid var(--border); border-radius: 6px; }
+        .btn {
+            display: inline-block;
+            margin-top: 0.65rem;
+            padding: 0.45rem 0.9rem;
+            background: var(--accent);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+        .governance-box {
+            background: var(--warn-bg);
+            border: 1px solid var(--warn-border);
+            color: var(--warn-ink);
+            border-radius: 10px;
+            padding: 1.1rem 1.35rem;
+            margin-bottom: 2rem;
+        }
+        footer {
+            border-top: 1px solid var(--border);
+            padding-top: 1.25rem;
+            font-size: 0.9rem;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        footer a { color: var(--accent); }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <span class="eyebrow">Bring Your Own DAM · Zero Media Duplication</span>
+            <h1>@Model.Name</h1>
+            @if (!string.IsNullOrWhiteSpace(subtitle))
+            {
+                <p class="subtitle">@subtitle</p>
+            }
+        </header>
+
+        @if (hero is { IsAvailable: true })
+        {
+            <section class="hero-card" aria-label="Featured Exhibition Asset">
+                <dam-image asset="@hero"
+                           size="scr"
+                           sizes="(max-width: 980px) 100vw, 980px"
+                           loading="eager"
+                           css-class="hero-image" />
+                <div class="meta">
+                    <h2>@hero.Title</h2>
+                    @if (!string.IsNullOrWhiteSpace(hero.Description))
+                    {
+                        <p>@hero.Description</p>
+                    }
+                    <p><strong>Alt text (editorial override):</strong> @hero.AltText</p>
+                    @if (!string.IsNullOrWhiteSpace(hero.Credit))
+                    {
+                        <p><strong>Credit:</strong> @hero.Credit</p>
+                    }
+                    <div class="badge-row">
+                        <span class="badge">Resource #@hero.ResourceId</span>
+                        <span class="badge">@hero.ResourceType (@hero.FileExtension.ToUpperInvariant())</span>
+                        <span class="badge">@(hero.Width)x@(hero.Height)</span>
+                        <span class="badge">Renditions: @string.Join(", ", hero.Renditions.Keys)</span>
+                    </div>
+                </div>
+            </section>
+        }
+
+        <div class="grid">
+            @if (secondary is { IsAvailable: true })
+            {
+                <article class="card">
+                    <dam-image asset="@secondary"
+                               size="pre"
+                               sizes="(max-width: 680px) 100vw, 460px"
+                               css-class="plate-image" />
+                    <div class="meta">
+                        <h3>@secondary.Title</h3>
+                        <p>@secondary.Description</p>
+                        @if (!string.IsNullOrWhiteSpace(secondary.Credit))
+                        {
+                            <p><strong>Credit:</strong> @secondary.Credit</p>
+                        }
+                        <div class="badge-row">
+                            <span class="badge">Resource #@secondary.ResourceId</span>
+                            <span class="badge">DAM Caption Fallback Alt</span>
+                        </div>
+                    </div>
+                </article>
+            }
+
+            @if (reportPdf is { IsAvailable: true })
+            {
+                <article class="card">
+                    <div class="pdf-layout">
+                        @if (!string.IsNullOrWhiteSpace(reportPdf.PreviewUrl))
+                        {
+                            <img src="@reportPdf.PreviewUrl"
+                                 alt="Cover preview for @reportPdf.Title"
+                                 class="pdf-thumb"
+                                 loading="lazy" />
+                        }
+                        <div>
+                            <h3 style="margin-top:0">@reportPdf.Title</h3>
+                            <p style="margin:0.25rem 0;color:var(--muted);font-size:0.92rem;">@reportPdf.Description</p>
+                            <div class="badge-row">
+                                <span class="badge">Resource #@reportPdf.ResourceId</span>
+                                <span class="badge">Document (@reportPdf.FileExtension.ToUpperInvariant())</span>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(reportPdf.Url))
+                            {
+                                <a class="btn" href="@reportPdf.Url" target="_blank" rel="noopener">
+                                    Open Original PDF from DAM
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+
+        @if (loanAsset is not null)
+        {
+            <!-- Even if a restricted/deleted asset is passed to <dam-image />, output is cleanly suppressed -->
+            <dam-image asset="@loanAsset" />
+
+            @if (!loanAsset.IsAvailable)
+            {
+                <aside class="governance-box">
+                    <strong>DAM Governance Active (Resource #@loanAsset.ResourceId — @loanAsset.Title):</strong>
+                    Suppressed from public rendering because <code>@loanAsset.UnavailableReason</code>
+                </aside>
+            }
+        }
+
+        <footer>
+            <span>Assets streamed directly from ResourceSpace without copying into <code>wwwroot/media</code>.</span>
+            <span>
+                <a href="/umbraco" target="_blank">Umbraco Backoffice</a> ·
+                <a href="/umbraco/delivery/api/v2/content" target="_blank">Content Delivery API v2 JSON</a>
+            </span>
+        </footer>
+    </main>
+</body>
+</html>
