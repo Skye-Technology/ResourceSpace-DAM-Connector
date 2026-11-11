@@ -23,7 +23,7 @@ public sealed class DemoComposer : IComposer
 }
 
 /// <summary>
-/// Idempotently seeds the demo DataType, DocumentType, Template, and published Exhibition root page on first boot
+/// Idempotently seeds the demo DataType, DocumentType, Template, and published Exhibition root page on startup
 /// so developers cloning the repo get a working end-to-end Umbraco 17 + ResourceSpace demo immediately.
 /// </summary>
 public sealed class DemoSchemaSeeder : INotificationAsyncHandler<UmbracoApplicationStartedNotification>
@@ -131,14 +131,19 @@ public sealed class DemoSchemaSeeder : INotificationAsyncHandler<UmbracoApplicat
     private async Task<ITemplate?> EnsureExhibitionTemplateAsync()
     {
         const string templateAlias = "exhibitionPage";
+        var viewPath = Path.Combine(_hostEnvironment.ContentRootPath, "Views", "exhibitionPage.cshtml");
+        var viewContent = System.IO.File.Exists(viewPath) ? await System.IO.File.ReadAllTextAsync(viewPath) : null;
+
         var existing = await _templateService.GetAsync(templateAlias);
         if (existing is not null)
         {
+            if (!string.IsNullOrEmpty(viewContent) && existing.Content != viewContent)
+            {
+                existing.Content = viewContent;
+                await _templateService.UpdateAsync(existing, Constants.Security.SuperUserKey);
+            }
             return existing;
         }
-
-        var viewPath = Path.Combine(_hostEnvironment.ContentRootPath, "Views", "exhibitionPage.cshtml");
-        var viewContent = System.IO.File.Exists(viewPath) ? await System.IO.File.ReadAllTextAsync(viewPath) : null;
 
         var result = await _templateService.CreateAsync(
             "Exhibition Page",
@@ -157,6 +162,28 @@ public sealed class DemoSchemaSeeder : INotificationAsyncHandler<UmbracoApplicat
         var existing = _contentTypeService.Get(contentTypeAlias);
         if (existing is not null)
         {
+            var updated = false;
+            updated |= EnsurePropertyExists(
+                existing,
+                pickerDataType,
+                "galleryAmphora",
+                "Gallery Highlight — Classical Vessel",
+                "Curated gallery plate streamed from ResourceSpace.",
+                6);
+            updated |= EnsurePropertyExists(
+                existing,
+                pickerDataType,
+                "galleryArchitecture",
+                "Gallery Highlight — Architectural Canvas",
+                "Curated architectural study streamed from ResourceSpace.",
+                7);
+
+            if (updated)
+            {
+                await _contentTypeService.UpdateAsync(existing, Constants.Security.SuperUserKey);
+                _logger.LogInformation("Updated DocumentType 'exhibitionPage' with curated gallery properties.");
+            }
+
             return existing;
         }
 
@@ -208,11 +235,31 @@ public sealed class DemoSchemaSeeder : INotificationAsyncHandler<UmbracoApplicat
             "ResourceSpace DAM Assets");
 
         contentType.AddPropertyType(
+            new PropertyType(_shortStringHelper, pickerDataType, "galleryAmphora")
+            {
+                Name = "Gallery Highlight — Classical Vessel",
+                Description = "Curated gallery plate streamed from ResourceSpace.",
+                SortOrder = 4,
+            },
+            "damAssets",
+            "ResourceSpace DAM Assets");
+
+        contentType.AddPropertyType(
+            new PropertyType(_shortStringHelper, pickerDataType, "galleryArchitecture")
+            {
+                Name = "Gallery Highlight — Architectural Canvas",
+                Description = "Curated architectural study streamed from ResourceSpace.",
+                SortOrder = 5,
+            },
+            "damAssets",
+            "ResourceSpace DAM Assets");
+
+        contentType.AddPropertyType(
             new PropertyType(_shortStringHelper, pickerDataType, "cataloguePdf")
             {
                 Name = "Conservation Report (PDF)",
                 Description = "ResourceSpace PDF document rendered with Ghostscript cover preview and direct download URL.",
-                SortOrder = 4,
+                SortOrder = 6,
             },
             "damAssets",
             "ResourceSpace DAM Assets");
@@ -222,7 +269,7 @@ public sealed class DemoSchemaSeeder : INotificationAsyncHandler<UmbracoApplicat
             {
                 Name = "Restricted Loan Artefact",
                 Description = "References Resource #4 (access=1 in ResourceSpace) to demonstrate automatic restriction enforcement.",
-                SortOrder = 5,
+                SortOrder = 7,
             },
             "damAssets",
             "ResourceSpace DAM Assets");
@@ -232,43 +279,116 @@ public sealed class DemoSchemaSeeder : INotificationAsyncHandler<UmbracoApplicat
         return contentType;
     }
 
+    private bool EnsurePropertyExists(
+        IContentType contentType,
+        IDataType dataType,
+        string alias,
+        string name,
+        string description,
+        int sortOrder)
+    {
+        if (contentType.PropertyTypeExists(alias))
+        {
+            return false;
+        }
+
+        contentType.AddPropertyType(
+            new PropertyType(_shortStringHelper, dataType, alias)
+            {
+                Name = name,
+                Description = description,
+                SortOrder = sortOrder,
+            },
+            "damAssets",
+            "ResourceSpace DAM Assets");
+
+        return true;
+    }
+
     private void EnsureDemoRootContent(IContentType contentType)
     {
-        if (_contentService.GetRootContent().Any())
+        var existingRoot = _contentService.GetRootContent().FirstOrDefault();
+        if (existingRoot is not null)
         {
+            var heroJson = existingRoot.GetValue<string>("heroAsset") ?? string.Empty;
+            var hasGallery = !string.IsNullOrWhiteSpace(existingRoot.GetValue<string>("galleryAmphora"));
+            if (!heroJson.Contains("Roman Floor Mosaic, North Wing", StringComparison.Ordinal) && hasGallery)
+            {
+                return;
+            }
+
+            existingRoot.Name = "Mediterranean Antiquity & Botanical Study";
+            PopulateExhibitionAssets(existingRoot);
+            _contentService.Save(existingRoot);
+            _contentService.Publish(existingRoot, ["*"]);
+            _logger.LogInformation("Upgraded root exhibition content node with curated CC0 museum assets.");
             return;
         }
 
-        var page = _contentService.Create("North Wing Roman Exhibition", Constants.System.Root, contentType.Alias);
+        var page = _contentService.Create("Mediterranean Antiquity & Botanical Study", Constants.System.Root, contentType.Alias);
+        PopulateExhibitionAssets(page);
+        _contentService.Save(page);
+        _contentService.Publish(page, ["*"]);
 
+        _logger.LogInformation("Seeded and published root content node 'Mediterranean Antiquity & Botanical Study'.");
+    }
+
+    private static void PopulateExhibitionAssets(IContent page)
+    {
         page.SetValue(
             "subtitle",
-            "Curated assets delivered directly from ResourceSpace 11.0 via Umbraco 17 Razor and the Content Delivery API.");
+            "CC0 Public Domain museum artworks streamed live from ResourceSpace 11.0 into Umbraco 17 Razor and the Content Delivery API — with zero media duplication.");
 
         page.SetValue("heroAsset", SerializeRef(new DamAssetReference
         {
             ResourceId = "1",
             Provider = "resourcespace",
-            Title = "Roman Floor Mosaic, North Wing",
-            AltText = "Overhead photograph of the fourth-century geometric Roman floor mosaic in the North Wing",
+            Title = "Mosaic Floor Panel Depicting Marine Life",
+            AltText = "Third-century Roman stone tesserae floor mosaic from Daphne depicting fish, crustaceans, and shells",
             FileExtension = "jpg",
             ResourceType = "Photo",
-            Width = 1600,
-            Height = 1000,
-            Credit = "Trustees of the Civic Museum",
+            Width = 843,
+            Height = 432,
+            Credit = "Art Institute of Chicago Open Access (CC0 Public Domain)",
         }));
 
         page.SetValue("secondaryAsset", SerializeRef(new DamAssetReference
         {
             ResourceId = "2",
             Provider = "resourcespace",
-            Title = "Botanical Herbarium Plate — Rosa Canina",
+            Title = "Botanical Study — Roses in a Bowl (1881)",
             AltText = null, // Demonstrates fallback to DAM caption field
             FileExtension = "jpg",
             ResourceType = "Photo",
-            Width = 1400,
-            Height = 1000,
-            Credit = "University Special Collections",
+            Width = 843,
+            Height = 703,
+            Credit = "Art Institute of Chicago Open Access (CC0 Public Domain)",
+        }));
+
+        page.SetValue("galleryAmphora", SerializeRef(new DamAssetReference
+        {
+            ResourceId = "5",
+            Provider = "resourcespace",
+            Title = "Athenian Belly-Amphora (550–540 BCE)",
+            AltText = "Greek black-figure terracotta amphora depicting Herakles wrestling the Nemean Lion",
+            FileExtension = "jpg",
+            ResourceType = "Photo",
+            Width = 843,
+            Height = 1053,
+            Credit = "Art Institute of Chicago Open Access (CC0 Public Domain)",
+        }));
+
+        page.SetValue("galleryArchitecture", SerializeRef(new DamAssetReference
+        {
+            ResourceId = "6",
+            Provider = "resourcespace",
+            Title = "The Old Temple — Monumental Colonnade (1787)",
+            AltText = "Hubert Robert oil painting of a classical vaulted Roman colonnade bathed in sunlight",
+            FileExtension = "jpg",
+            ResourceType = "Photo",
+            Width = 843,
+            Height = 974,
+            Credit = "Art Institute of Chicago Open Access (CC0 Public Domain)",
         }));
 
         page.SetValue("cataloguePdf", SerializeRef(new DamAssetReference
@@ -278,23 +398,20 @@ public sealed class DemoSchemaSeeder : INotificationAsyncHandler<UmbracoApplicat
             Title = "2026 Annual Conservation Report (PDF)",
             FileExtension = "pdf",
             ResourceType = "Document",
-            Credit = "Heritage Conservation Trust",
+            Credit = "Civic Museum Conservation Trust",
         }));
 
         page.SetValue("loanAsset", SerializeRef(new DamAssetReference
         {
             ResourceId = "4",
             Provider = "resourcespace",
-            Title = "Embargoed Loan Artefact (Restricted)",
+            Title = "Portrait Head of Emperor Hadrian (Restricted Loan)",
             FileExtension = "jpg",
             ResourceType = "Photo",
-            Credit = "Private Loan — Embargoed",
+            Width = 843,
+            Height = 1026,
+            Credit = "Embargoed International Loan · CC0 Study Reference",
         }));
-
-        _contentService.Save(page);
-        _contentService.Publish(page, ["*"]);
-
-        _logger.LogInformation("Seeded and published root content node 'North Wing Roman Exhibition'.");
     }
 
     private static string SerializeRef(DamAssetReference reference)

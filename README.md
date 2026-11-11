@@ -73,11 +73,11 @@ flowchart LR
 docker compose -f docker/resourcespace/docker-compose.yml up -d --build
 ```
 
-### 2. Seed Demo DAM Users & Sample Collection Assets
+### 2. Seed Demo DAM Users & Curated CC0 Museum Assets
 ```bash
 ./docker/resourcespace/seed-demo-assets.sh
 ```
-This idempotently configures ResourceSpace (`http://localhost:8085`), creates a dedicated `umbraco_api` service user, and ingests 4 sample museum assets (including a PDF report and a restricted loan artefact with `access=1` to demonstrate DAM governance):
+This idempotently configures ResourceSpace (`http://localhost:8085`), creates a dedicated `umbraco_api` service user, and ingests **8 curated CC0 1.0 Public Domain museum assets** bundled in `docker/resourcespace/seed-assets/` (including an illustrated PDF conservation dossier and a restricted marble bust with `access=1` to demonstrate DAM governance). Pass `--reseed` to replace previously seeded demo assets at any time.
 
 | Service | URL | Credentials |
 | :--- | :--- | :--- |
@@ -88,11 +88,11 @@ This idempotently configures ResourceSpace (`http://localhost:8085`), creates a 
 ```bash
 dotnet run --project src/SkyeTechnology.Umbraco.ResourceSpace.Demo
 ```
-On first boot, Umbraco performs an unattended SQLite install and `DemoSchemaSeeder` automatically creates the **ResourceSpace - Asset Picker** Data Type, the **Exhibition Page** Document Type & Template, and publishes the root exhibition page.
+On startup, `DemoSchemaSeeder` automatically ensures the **ResourceSpace - Asset Picker** Data Type, the **Exhibition Page** Document Type & Template, and the published root exhibition page are up to date.
 
 | Endpoint | URL | Login / Notes |
 | :--- | :--- | :--- |
-| **Public Exhibition Page (Razor)** | `http://localhost:5080/` | Renders live renditions `#1`–`#3` & suppresses restricted `#4` |
+| **Public Exhibition Page (Razor)** | `http://localhost:5080/` | Streams live CC0 museum renditions & suppresses restricted `#4` |
 | **Umbraco 17 Backoffice** | `http://localhost:5080/umbraco` | `admin@example.org` / `LocalDevPassword123!` |
 | **Content Delivery API v2** | `http://localhost:5080/umbraco/delivery/api/v2/content` | Headless JSON output with `url`, `srcSet` & `renditions` |
 
