@@ -1,6 +1,6 @@
 # Bring Your Own DAM: ResourceSpace Connector for Umbraco 17
 
-A working, MIT-licensed starter and Reusable Class Library (`Umbraco.Community.ResourceSpace`) built as the companion repository for the *24 Days In Umbraco* article **"Bring Your Own DAM: Building a ResourceSpace Connector for Umbraco"**.
+**By [Skye Technology](https://skye.technology)** — An open-source, MIT-licensed starter and Reusable Class Library (`SkyeTechnology.Umbraco.ResourceSpace`), built as the companion repository for the *24 Days In Umbraco* article **"Bring Your Own DAM: Building a ResourceSpace Connector for Umbraco"**.
 
 Editors can search, filter, preview, and pick **ResourceSpace** assets directly inside the **Umbraco 17 (Bellissima)** backoffice — and deliver responsive renditions to **Razor views** and the **Headless Content Delivery API** without copying files into Umbraco's media library.
 
@@ -35,23 +35,24 @@ flowchart LR
 ## Repository Structure
 
 ```text
-├── docker/resourcespace/                  # Local ResourceSpace 11.0 + MariaDB 11.4 Docker stack & asset seeder
-├── docs/article.md                        # Companion "24 Days In Umbraco" article
+├── docker/resourcespace/                       # Local ResourceSpace 11.0 + MariaDB 11.4 Docker stack & asset seeder
+├── docs/article.md                             # Companion "24 Days In Umbraco" article
+├── umbraco-marketplace.json                    # Umbraco Marketplace listing manifest (Skye Technology)
 ├── src/
-│   ├── Umbraco.Community.ResourceSpace/   # Reusable Razor Class Library (RCL) connector package
-│   │   ├── Abstractions/                  # IDamConnector & provider-agnostic DAM DTOs
-│   │   ├── Client/                        # TypeScript + Lit + Vite Bellissima backoffice extension
-│   │   ├── Composers/                     # AddResourceSpaceDam() DI registration & auto-composer
-│   │   ├── Configuration/                 # ResourceSpaceOptions strongly-typed settings
-│   │   ├── Controllers/                   # Management API proxy controller
-│   │   ├── Models/                        # PublishedDamAsset model for Razor & Delivery API
-│   │   ├── PropertyEditors/               # DataEditor schema + PropertyValueConverter
-│   │   ├── ResourceSpace/                 # SHA-256 request signer, HTTP client & connector
-│   │   ├── TagHelpers/                    # <dam-image /> responsive Razor TagHelper
-│   │   └── wwwroot/App_Plugins/           # Compiled ES module bundle & umbraco-package.json
-│   └── Umbraco.ResourceSpace.Demo/        # Umbraco 17.8 (.NET 10) SQLite demo site + auto-seeder
+│   ├── SkyeTechnology.Umbraco.ResourceSpace/   # Reusable Razor Class Library (RCL) NuGet package
+│   │   ├── Abstractions/                       # IDamConnector & provider-agnostic DAM DTOs
+│   │   ├── Client/                             # TypeScript + Lit + Vite Bellissima backoffice extension
+│   │   ├── Composers/                          # AddResourceSpaceDam() DI registration & auto-composer
+│   │   ├── Configuration/                      # ResourceSpaceOptions strongly-typed settings
+│   │   ├── Controllers/                        # Management API proxy controller
+│   │   ├── Models/                             # PublishedDamAsset model for Razor & Delivery API
+│   │   ├── PropertyEditors/                    # DataEditor schema + PropertyValueConverter
+│   │   ├── ResourceSpace/                      # SHA-256 request signer, HTTP client & connector
+│   │   ├── TagHelpers/                         # <dam-image /> responsive Razor TagHelper
+│   │   └── wwwroot/App_Plugins/                # Compiled ES module bundle & umbraco-package.json
+│   └── SkyeTechnology.Umbraco.ResourceSpace.Demo/ # Umbraco 17.8 (.NET 10) SQLite demo site + auto-seeder
 └── tests/
-    └── Umbraco.Community.ResourceSpace.Tests/ # xUnit test suite (signing, caching, governance, converter)
+    └── SkyeTechnology.Umbraco.ResourceSpace.Tests/ # xUnit test suite (signing, caching, governance, converter)
 ```
 
 ---
@@ -81,7 +82,7 @@ This idempotently configures ResourceSpace (`http://localhost:8085`), creates a 
 
 ### 3. Run the Umbraco 17 Demo Site
 ```bash
-dotnet run --project src/Umbraco.ResourceSpace.Demo
+dotnet run --project src/SkyeTechnology.Umbraco.ResourceSpace.Demo
 ```
 On first boot, Umbraco performs an unattended SQLite install and `DemoSchemaSeeder` automatically creates the **ResourceSpace - Asset Picker** Data Type, the **Exhibition Page** Document Type & Template, and publishes the root exhibition page.
 
@@ -97,7 +98,8 @@ On first boot, Umbraco performs an unattended SQLite install and `DemoSchemaSeed
 
 ### Razor View (`<dam-image />`)
 ```cshtml
-@addTagHelper *, Umbraco.Community.ResourceSpace
+@using SkyeTechnology.Umbraco.ResourceSpace.Models
+@addTagHelper *, SkyeTechnology.Umbraco.ResourceSpace
 @{
     var hero = Model.Value<PublishedDamAsset>("heroAsset");
 }
@@ -123,19 +125,22 @@ ResourceSpace__MissingAssetCacheDuration="00:00:30"
 
 ---
 
-## Rebuilding the Backoffice Client & Running Tests
+## Rebuilding the Backoffice Client, Packing & Running Tests
 
 ```bash
 # Rebuild TypeScript / Lit backoffice extension
-npm --prefix src/Umbraco.Community.ResourceSpace/Client install
-npm --prefix src/Umbraco.Community.ResourceSpace/Client run build
+npm --prefix src/SkyeTechnology.Umbraco.ResourceSpace/Client install
+npm --prefix src/SkyeTechnology.Umbraco.ResourceSpace/Client run build
 
 # Run the xUnit test suite
-dotnet test UmbracoResourceSpace.sln
+dotnet test SkyeTechnology.Umbraco.ResourceSpace.sln
+
+# Build NuGet package (.nupkg + .snupkg)
+dotnet pack src/SkyeTechnology.Umbraco.ResourceSpace -c Release
 ```
 
 ---
 
 ## License
 
-Released under the [MIT License](LICENSE).
+Copyright (c) 2026 [Skye Technology](https://skye.technology). Released under the [MIT License](LICENSE).

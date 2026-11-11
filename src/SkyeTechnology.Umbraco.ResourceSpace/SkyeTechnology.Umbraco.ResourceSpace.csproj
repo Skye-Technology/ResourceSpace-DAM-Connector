@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <PackageId>SkyeTechnology.Umbraco.ResourceSpace</PackageId>
+    <Title>Skye Technology ResourceSpace DAM Connector for Umbraco</Title>
+    <Version>1.0.0</Version>
+    <Authors>Skye Technology</Authors>
+    <Company>Skye Technology</Company>
+    <Copyright>Copyright (c) 2026 Skye Technology</Copyright>
+    <Description>Bring Your Own DAM: ResourceSpace connector for Umbraco 17+ by Skye Technology, featuring a signed Management API proxy, Lit backoffice picker, Razor &amp; Delivery API property value converter, and resilient caching.</Description>
+    <PackageProjectUrl>https://skye.technology</PackageProjectUrl>
+    <PackageTags>umbraco;umbraco-marketplace;dam;resourcespace;headless;bellissima;skye-technology</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Umbraco.Cms.Web.Common" Version="[17.8.1, 18.0.0)" />
+    <PackageReference Include="Umbraco.Cms.Api.Management" Version="[17.8.1, 18.0.0)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SkyeTechnology.Umbraco.ResourceSpace.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Client\**" />
+    <Compile Remove="Client\**" />
+    <EmbeddedResource Remove="Client\**" />
+    <None Remove="Client\**" />
+  </ItemGroup>
+</Project>

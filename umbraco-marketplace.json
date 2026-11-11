@@ -1,0 +1,26 @@
+{
+  "$schema": "https://marketplace.umbraco.com/umbraco-marketplace-schema.json",
+  "Title": "Skye Technology ResourceSpace DAM Connector",
+  "Description": "Bring Your Own DAM to Umbraco 17+: browse, search, preview, and deliver ResourceSpace assets directly to Razor views and the Headless Content Delivery API without duplicating files into the Umbraco Media Library.",
+  "PackageType": "Integration",
+  "Category": "PIM & DAM",
+  "AlternateCategory": "Headless",
+  "LicenseTypes": [
+    "Free"
+  ],
+  "AuthorDetails": {
+    "Name": "Skye Technology",
+    "Description": "Senior digital engineering and multi-CMS architecture consultancy specialising in modern .NET and Umbraco platforms.",
+    "Url": "https://skye.technology",
+    "SyncContributorsFromRepository": true
+  },
+  "DocumentationUrl": "https://skye.technology",
+  "Tags": [
+    "dam",
+    "resourcespace",
+    "media",
+    "headless",
+    "delivery-api",
+    "bellissima"
+  ]
+}

@@ -11,6 +11,10 @@ out/
 TestResults/
 *.nupkg
 *.snupkg
+.nuget/
+**/.nuget/
+.local/
+Library/
 
 ## Umbraco runtime & local database
 umbraco/Data/

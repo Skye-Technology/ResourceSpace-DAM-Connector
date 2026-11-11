@@ -262,4 +262,4 @@ Swapping in another enterprise DAM means writing a single `IDamConnector` implem
 
 ## Try the Starter Repository
 
-The complete source code—including the reusable `Umbraco.Community.ResourceSpace` Razor Class Library, the TypeScript/Lit backoffice extension, xUnit tests, an Umbraco 17 demo site, and a Docker Compose stack that boots ResourceSpace 11.0 with sample museum assets—is available on GitHub under the MIT licence. Clone it, run `docker compose up -d`, `dotnet run`, and start bringing your own DAM to Umbraco.
+The complete source code—including the reusable `SkyeTechnology.Umbraco.ResourceSpace` Razor Class Library, the TypeScript/Lit backoffice extension, xUnit tests, an Umbraco 17 demo site, and a Docker Compose stack that boots ResourceSpace 11.0 with sample museum assets—is available on GitHub under the MIT licence. Clone it, run `docker compose up -d`, `dotnet run`, and start bringing your own DAM to Umbraco.
