@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="SkyeTechnology.Umbraco.ResourceSpace Logo">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="55%" stop-color="#172554" />
+      <stop offset="100%" stop-color="#1e3a8a" />
+    </linearGradient>
+    <linearGradient id="bridgeGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="45%" stop-color="#fb923c" />
+      <stop offset="55%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#f8fafc" />
+    </linearGradient>
+    <filter id="nodeGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Full-bleed dark indigo/slate canvas -->
+  <rect width="512" height="512" rx="96" fill="url(#bgGrad)" />
+
+  <!-- Upper-left frame (Umbraco CMS consumer) -->
+  <rect x="132" y="132" width="192" height="192" rx="34"
+        fill="none" stroke="#f8fafc" stroke-width="20" />
+
+  <!-- Lower-right frame (ResourceSpace DAM source of truth) -->
+  <rect x="188" y="188" width="192" height="192" rx="34"
+        fill="none" stroke="#38bdf8" stroke-width="20" />
+
+  <!-- Live streaming connector bridge -->
+  <line x1="186" y1="326" x2="326" y2="186"
+        stroke="url(#bridgeGrad)" stroke-width="18" stroke-linecap="round" />
+
+  <!-- Outer pulse arcs -->
+  <path d="M 224 234 A 42 42 0 0 1 278 224" fill="none" stroke="#60a5fa" stroke-width="6" stroke-linecap="round" />
+  <path d="M 288 278 A 42 42 0 0 1 234 288" fill="none" stroke="#60a5fa" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Central signed-proxy node -->
+  <circle cx="256" cy="256" r="22" fill="#0f172a" stroke="#f97316" stroke-width="12" filter="url(#nodeGlow)" />
+</svg>

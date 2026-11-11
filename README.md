@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/icon.png" alt="SkyeTechnology.Umbraco.ResourceSpace Logo" width="128" height="128" style="border-radius: 24px;" />
+</p>
+
 # Bring Your Own DAM: ResourceSpace Connector for Umbraco 17
 
 **By [Skye Technology](https://skye.technology)** — An open-source, MIT-licensed starter and Reusable Class Library (`SkyeTechnology.Umbraco.ResourceSpace`), built as the companion repository for the *24 Days In Umbraco* article **"Bring Your Own DAM: Building a ResourceSpace Connector for Umbraco"**.
