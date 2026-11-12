@@ -215,13 +215,19 @@ private _updateValue(next: DamAssetReference | undefined): void {
 }
 ```
 
-Once selected, `<resourcespace-asset-picker>` displays a live DAM status badge (`Live in DAM` or `Unavailable in DAM`), a contextual alt-text `<uui-input>`, and a `Refresh DAM status` action. Inside `<resourcespace-picker-modal>`, editors get debounced keyword search (`search_get_previews`), resource-type filter pills (`Photo`, `Document`, `Video`), a responsive thumbnail card grid, and a sticky metadata inspector listing dimensions, copyright credits, and generated ResourceSpace renditions (`thm`, `pre`, `scr`, `hpr`, `original`).
+Once selected, `<resourcespace-asset-picker>` displays a live DAM status badge (`Live in DAM` or `Unavailable in DAM`), an editorial alt-text `<uui-input>`, and a `Refresh DAM status` action:
+
+![Selected ResourceSpace assets in the Umbraco 17 backoffice](assets/screenshots/umbraco-backoffice-selected-assets.png)
+
+Inside `<resourcespace-picker-modal>`, editors get debounced keyword search (`search_get_previews`), resource-type filter pills (`Photo`, `Document`, `Video`, `Audio`), thumbnail cards, and a sticky inspector listing dimensions, copyright credits, and generated renditions (`thm`, `pre`, `scr`, `hpr`, `original`):
+
+![Slide-out ResourceSpace picker modal in Umbraco 17](assets/screenshots/umbraco-backoffice-picker-modal.png)
 
 ---
 
 ## 3. What to Store: Keeping the DAM as Single Source of Truth
 
-A common mistake in DAM integrations is persisting full rendition URLs in Umbraco's property JSON. If your infrastructure team later migrates the DAM domain, adds a CDN, or regenerates watermarks, thousands of content nodes silently break until republished.
+A common mistake in DAM integrations is persisting full rendition URLs in Umbraco's property JSON. If your infrastructure team migrates the DAM domain, adds a CDN, or regenerates watermarks, thousands of content nodes silently break until republished.
 
 Instead, we store only a compact `DamAssetReference`:
 
@@ -284,10 +290,10 @@ public sealed class ResourceSpacePropertyValueConverter
 }
 ```
 
-Notice `PropertyCacheLevel.None`. In Umbraco 17, returning `None` ensures the property value is not frozen indefinitely inside published content snapshots; instead, freshness is governed by our connector's `IMemoryCache` policy.
+Notice `PropertyCacheLevel.None`. In Umbraco 17, returning `None` ensures the property value is not frozen inside published content snapshots; freshness is governed by our connector's `IMemoryCache` policy.
 
 When resolving a `PublishedDamAsset`, the converter distinguishes between **images** and **documents**:
-- For images (including museum master TIFFs), `Url` resolves to the configured web rendition (defaulting to `scr`) and `SrcSet` assembles every width-qualified image rendition (e.g. `200w`, `843w`, `1280w`).
+- For images (including museum master TIFFs), `Url` resolves to the configured web rendition (default `scr`) and `SrcSet` assembles every width-qualified rendition (`140w`, `200w`, `843w`, `1280w`).
 - For documents like PDFs—where ResourceSpace generates Ghostscript JPEG previews alongside the original PDF—`Url` points to the `.pdf` file while `PreviewUrl` exposes the cover thumbnail.
 
 In Razor, a `<dam-image>` TagHelper wires `src`, `srcset`, `sizes`, `alt`, and layout-stabilising `width`/`height` attributes in one tag:
@@ -303,6 +309,10 @@ In Razor, a `<dam-image>` TagHelper wires `src`, `srcset`, `sizes`, `alt`, and l
            css-class="hero-image" />
 ```
 
+![Live exhibition hero streamed from ResourceSpace](assets/screenshots/website-hero-preview.png)
+
+![Exhibition gallery plates and PDF conservation dossier](assets/screenshots/website-gallery-preview.png)
+
 And because we implemented `IDeliveryApiPropertyValueConverter`, headless Next.js or Astro frontends querying `/umbraco/delivery/api/v2/content` immediately receive structured JSON with `url`, `previewUrl`, `srcSet`, `isAvailable`, and the full `renditions` dictionary.
 
 ---
@@ -311,8 +321,13 @@ And because we implemented `IDeliveryApiPropertyValueConverter`, headless Next.j
 
 Taking a DAM connector into production means planning for failure modes and asset governance:
 
-- **Positive and negative caching.** Calling ResourceSpace on every page view would hammer the DAM. `ResourceSpaceDamConnector` caches live `DamAssetDetail` entries in `IMemoryCache` for `AssetCacheDuration` (default 10 minutes), while missing or restricted lookups use a shorter `MissingAssetCacheDuration` (default 60 seconds) so newly fixed assets recover quickly without permitting cache-miss floods. `EvictAssetCache(resourceId)` also supports manual backoffice refresh and webhook invalidation.
-- **Deleted, archived, and restricted assets.** When an asset is purged in ResourceSpace (`get_resource_data` returns `false`), moved outside `AllowedArchiveStates` (default `[0]` Active), or marked restricted/confidential (`access != 0` when `BlockRestrictedAssets` is enabled), the connector returns `IsAvailable = false` with an `UnavailableReason` rather than leaking restricted filestore URLs. `<dam-image>` cleanly suppresses output (or renders a configured `FallbackImageUrl`), preventing broken image icons across live pages.
+- **Positive and negative caching.** Calling ResourceSpace on every page view would hammer the DAM. `ResourceSpaceDamConnector` caches live `DamAssetDetail` entries in `IMemoryCache` for `AssetCacheDuration` (default 10 minutes), while missing or restricted lookups use `MissingAssetCacheDuration` (default 60 seconds) so fixed assets recover quickly without cache-miss floods. `EvictAssetCache(resourceId)` supports manual refresh and webhook invalidation.
+- **Deleted, archived, and restricted assets.** When an asset is purged in ResourceSpace (`get_resource_data` returns `false`), moved outside `AllowedArchiveStates` (default `[0]` Active), or marked restricted (`access != 0` when `BlockRestrictedAssets` is enabled), the connector returns `IsAvailable = false` with an `UnavailableReason` instead of leaking filestore URLs. Editors see an immediate warning in Umbraco, while `<dam-image>` cleanly suppresses public output (or renders `FallbackImageUrl`):
+
+![Restricted asset warning in Umbraco 17 backoffice](assets/screenshots/umbraco-backoffice-governance-warning.png)
+
+![Public website suppressing restricted asset #4](assets/screenshots/website-pdf-and-governance.png)
+
 - **Internal vs. public URLs and URI hardening.** In containerised or VNet setups, Umbraco often reaches ResourceSpace over a private address (`http://resourcespace-internal`) while browsers load renditions through a public CDN (`https://dam.museum.org`). Setting `PublicBaseUrl` rewrites rendition URLs only after verifying exact origin/path boundaries and `http(s)` schemes—blocking `javascript:` or `data:` URI injection in `<dam-image>`, Razor views, and Delivery API JSON.
 - **Per-environment settings and secret hygiene.** Strongly typed `ResourceSpaceOptions` bind from the `ResourceSpace` configuration section (with `.RemoveAllLoggers()` on the typed `HttpClient` so `&sign=` query strings never leak into host logs), letting local developers use `appsettings.Development.json` or User Secrets while production injects `ResourceSpace__ApiKey` from Azure Key Vault.
 

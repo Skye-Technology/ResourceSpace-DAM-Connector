@@ -3,8 +3,8 @@ import { UmbLitElement as f } from "@umbraco-cms/backoffice/lit-element";
 import { UMB_AUTH_CONTEXT as b } from "@umbraco-cms/backoffice/auth";
 import { UmbModalToken as _, UMB_MODAL_MANAGER_CONTEXT as g } from "@umbraco-cms/backoffice/modal";
 import { UmbChangeEvent as m } from "@umbraco-cms/backoffice/event";
-import { R as y, s as w } from "./url-CSrW_WFR.js";
-const x = new _("ResourceSpace.Modal.AssetPicker", {
+import { R as y, s as x } from "./url-CSrW_WFR.js";
+const w = new _("ResourceSpace.Modal.AssetPicker", {
   modal: {
     type: "sidebar",
     size: "large"
@@ -53,7 +53,7 @@ let l = class extends f {
     if (this.readonly) return;
     const e = await this.getContext(g);
     if (!e) return;
-    const i = e.open(this, x, {
+    const i = e.open(this, w, {
       data: {
         allowedResourceTypes: this._allowedResourceTypes,
         currentResourceId: (t = this._value) == null ? void 0 : t.resourceId
@@ -100,7 +100,7 @@ let l = class extends f {
           </uui-button>
         </div>
       `;
-    const e = this._liveDetail, i = e !== null && !e.isAvailable, t = w((e == null ? void 0 : e.previewUrl) ?? (e == null ? void 0 : e.thumbnailUrl)), s = (e != null && e.isAvailable ? e.title : this._value.title) ?? `Resource #${this._value.resourceId}`, a = (e == null ? void 0 : e.defaultAltText) ?? s;
+    const e = this._liveDetail, i = e !== null && !e.isAvailable, t = x((e == null ? void 0 : e.previewUrl) ?? (e == null ? void 0 : e.thumbnailUrl)), s = (e != null && e.isAvailable ? e.title : this._value.title) ?? `Resource #${this._value.resourceId}`, a = (e == null ? void 0 : e.defaultAltText) ?? s;
     return o`
       <div class="selected-card ${i ? "unavailable" : ""}">
         ${this._loadingLive ? o`<uui-loader-bar></uui-loader-bar>` : c}
@@ -234,8 +234,9 @@ l.styles = v`
     .warning-banner {
       font-size: 12px;
       padding: var(--uui-size-space-2) var(--uui-size-space-3);
-      background: var(--uui-color-warning-standalone, #fff4ce);
-      color: #5c4500;
+      background: #fff7ed;
+      border: 1px solid #fdba74;
+      color: #9a3412;
       border-radius: var(--uui-border-radius);
     }
 

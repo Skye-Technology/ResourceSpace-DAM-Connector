@@ -36,6 +36,34 @@ flowchart LR
 
 ---
 
+## Screenshots
+
+### 1. Umbraco 17 (Bellissima) Backoffice — Selected DAM Assets & Editorial Overrides
+Editors see live ResourceSpace thumbnails, `Ref #` & file-type tags, real-time `Live in DAM` status badges, contextual editorial alt-text overrides (falling back to the DAM caption when blank), and one-click `Replace` / `Refresh DAM status` / `Remove` actions:
+
+![Selected ResourceSpace assets in the Umbraco 17 Bellissima backoffice](docs/assets/screenshots/umbraco-backoffice-selected-assets.png)
+
+### 2. Slide-Out ResourceSpace Asset Picker Modal & Metadata Inspector
+Clicking **Browse ResourceSpace DAM** or **Replace** opens `<resourcespace-picker-modal>` with debounced keyword search, resource-type filter pills (`All`, `Photo`, `Document`, `Video`, `Audio`), thumbnail cards, and a live inspector listing dimensions, copyright credits, and generated DAM renditions (`original`, `pre`, `thm`, `col`):
+
+![Slide-out ResourceSpace DAM picker modal and rendition inspector in Umbraco 17](docs/assets/screenshots/umbraco-backoffice-picker-modal.png)
+
+### 3. Live DAM Governance in Backoffice (`Unavailable in DAM`)
+When an archivist restricts, archives, or deletes an asset in ResourceSpace (e.g. `Resource #4` with `access=1`), the backoffice property editor automatically flags the card with an `Unavailable in DAM` badge and governance reason:
+
+![Restricted ResourceSpace asset warning inside the Umbraco 17 backoffice](docs/assets/screenshots/umbraco-backoffice-governance-warning.png)
+
+### 4. Public Exhibition Website Preview (Razor `<dam-image />`, PDF Cover Preview & DAM Governance)
+On the frontend (`http://localhost:5080/`), `<dam-image />` renders responsive `srcset` renditions directly from ResourceSpace with zero files copied into `wwwroot/media`, pairs multi-page PDFs with Ghostscript cover thumbnails, and automatically suppresses restricted assets:
+
+![Public exhibition hero streamed live from ResourceSpace](docs/assets/screenshots/website-hero-preview.png)
+
+| Curated Gallery Plates & Conservation Dossier | PDF Preview & Automatic Governance Suppression |
+| :---: | :---: |
+| ![Curated museum gallery plates streamed from ResourceSpace](docs/assets/screenshots/website-gallery-preview.png) | ![Ghostscript PDF preview and restricted asset suppression](docs/assets/screenshots/website-pdf-and-governance.png) |
+
+---
+
 ## Repository Structure
 
 ```text
@@ -44,7 +72,9 @@ flowchart LR
 │   ├── seed-demo-assets.sh                     # Idempotent DAM bootstrap & asset seeder (supports --reseed)
 │   ├── seed-demo-assets.php                    # Creates API service user & ingests 8 curated demo assets
 │   └── fetch-royalty-free-assets.sh            # Re-downloads CC0 artworks from Art Institute of Chicago IIIF
-├── docs/article.md                             # Companion "24 Days In Umbraco" article
+├── docs/
+│   ├── article.md                              # Companion "24 Days In Umbraco" article
+│   └── assets/screenshots/                     # Backoffice & live demo website screenshots
 ├── umbraco-marketplace.json                    # Umbraco Marketplace listing manifest (Skye Technology)
 ├── src/
 │   ├── SkyeTechnology.Umbraco.ResourceSpace/   # Reusable Razor Class Library (RCL) NuGet package

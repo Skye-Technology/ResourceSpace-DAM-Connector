@@ -3,7 +3,7 @@ const e = [
     type: "propertyEditorUi",
     alias: "ResourceSpace.PropertyEditorUi.AssetPicker",
     name: "ResourceSpace Asset Picker UI",
-    element: () => import("./resourcespace-picker.element-SEGHyfFR.js"),
+    element: () => import("./resourcespace-picker.element-Dj7UF06s.js"),
     meta: {
       label: "ResourceSpace Asset Picker",
       propertyEditorSchemaAlias: "ResourceSpace.AssetPicker",

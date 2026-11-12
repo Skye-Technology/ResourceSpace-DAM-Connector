@@ -299,8 +299,9 @@ export class ResourceSpaceAssetPickerElement
     .warning-banner {
       font-size: 12px;
       padding: var(--uui-size-space-2) var(--uui-size-space-3);
-      background: var(--uui-color-warning-standalone, #fff4ce);
-      color: #5c4500;
+      background: #fff7ed;
+      border: 1px solid #fdba74;
+      color: #9a3412;
       border-radius: var(--uui-border-radius);
     }
 
