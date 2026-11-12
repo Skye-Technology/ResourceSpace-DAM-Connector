@@ -3,7 +3,7 @@ const e = [
     type: "propertyEditorUi",
     alias: "ResourceSpace.PropertyEditorUi.AssetPicker",
     name: "ResourceSpace Asset Picker UI",
-    element: () => import("./resourcespace-picker.element-DZLf9yGZ.js"),
+    element: () => import("./resourcespace-picker.element-SEGHyfFR.js"),
     meta: {
       label: "ResourceSpace Asset Picker",
       propertyEditorSchemaAlias: "ResourceSpace.AssetPicker",
@@ -43,10 +43,9 @@ const e = [
     type: "modal",
     alias: "ResourceSpace.Modal.AssetPicker",
     name: "ResourceSpace Asset Picker Modal",
-    element: () => import("./resourcespace-picker-modal.element-ehIZ17Ag.js")
+    element: () => import("./resourcespace-picker-modal.element-MzoWesrx.js")
   }
 ];
 export {
   e as manifests
 };
-//# sourceMappingURL=resourcespace-connector.js.map

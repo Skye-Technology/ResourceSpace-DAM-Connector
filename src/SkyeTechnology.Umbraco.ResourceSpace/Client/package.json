@@ -11,5 +11,9 @@
     "@umbraco-cms/backoffice": "17.8.1",
     "typescript": "^5.7.3",
     "vite": "^6.2.0"
+  },
+  "overrides": {
+    "dompurify": "^3.4.17",
+    "js-yaml": "^4.3.2"
   }
 }

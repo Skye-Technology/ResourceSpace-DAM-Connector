@@ -17,6 +17,7 @@ import type {
 import { ResourceSpaceApiClient } from '../api/resourcespace-api.client.js';
 import { RESOURCESPACE_PICKER_MODAL } from '../modal/resourcespace-picker-modal.token.js';
 import type { DamAssetDetail, DamAssetReference } from '../types.js';
+import { sanitizeAssetUrl } from '../utils/url.js';
 
 @customElement('resourcespace-asset-picker')
 export class ResourceSpaceAssetPickerElement
@@ -153,7 +154,7 @@ export class ResourceSpaceAssetPickerElement
 
     const detail = this._liveDetail;
     const isUnavailable = detail !== null && !detail.isAvailable;
-    const thumb = detail?.previewUrl ?? detail?.thumbnailUrl;
+    const thumb = sanitizeAssetUrl(detail?.previewUrl ?? detail?.thumbnailUrl);
     const title = (detail?.isAvailable ? detail.title : this._value.title) ?? `Resource #${this._value.resourceId}`;
     const defaultAlt = detail?.defaultAltText ?? title;
 
@@ -164,7 +165,7 @@ export class ResourceSpaceAssetPickerElement
         <div class="card-body">
           <div class="preview-box">
             ${thumb
-              ? html`<img src=${thumb} alt=${title} />`
+              ? html`<img src=${thumb} alt=${title} referrerpolicy="no-referrer" />`
               : html`<uui-icon name="icon-document" class="doc-icon"></uui-icon>`}
           </div>
 
@@ -190,15 +191,15 @@ export class ResourceSpaceAssetPickerElement
                 `
               : nothing}
 
-            <div class="alt-field">
-              <label for="rs-alt-input">Editorial alt text override (optional — defaults to DAM caption)</label>
+            <label class="alt-field">
+              <span>Editorial alt text override (optional — defaults to DAM caption)</span>
               <uui-input
-                id="rs-alt-input"
+                label="Editorial alt text override"
                 placeholder=${defaultAlt}
                 .value=${this._value.altText ?? ''}
                 ?readonly=${this.readonly}
                 @change=${this._onAltTextChange}></uui-input>
-            </div>
+            </label>
 
             <div class="actions-row">
               <uui-button
@@ -309,7 +310,7 @@ export class ResourceSpaceAssetPickerElement
       gap: 4px;
     }
 
-    .alt-field label {
+    .alt-field span {
       font-size: 12px;
       color: var(--uui-color-text-alt);
     }

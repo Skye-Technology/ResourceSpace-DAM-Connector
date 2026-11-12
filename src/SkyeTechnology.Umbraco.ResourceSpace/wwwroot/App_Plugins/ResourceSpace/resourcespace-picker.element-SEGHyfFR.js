@@ -1,19 +1,19 @@
-import { html as o, nothing as n, css as v, property as d, state as p, customElement as h } from "@umbraco-cms/backoffice/external/lit";
+import { html as o, nothing as c, css as v, property as d, state as p, customElement as h } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement as f } from "@umbraco-cms/backoffice/lit-element";
 import { UMB_AUTH_CONTEXT as b } from "@umbraco-cms/backoffice/auth";
 import { UmbModalToken as _, UMB_MODAL_MANAGER_CONTEXT as g } from "@umbraco-cms/backoffice/modal";
 import { UmbChangeEvent as m } from "@umbraco-cms/backoffice/event";
-import { R as y } from "./resourcespace-api.client-eLZvwiWC.js";
-const w = new _("ResourceSpace.Modal.AssetPicker", {
+import { R as y, s as w } from "./url-CSrW_WFR.js";
+const x = new _("ResourceSpace.Modal.AssetPicker", {
   modal: {
     type: "sidebar",
     size: "large"
   }
 });
-var x = Object.defineProperty, A = Object.getOwnPropertyDescriptor, u = (e, i, t, s) => {
-  for (var a = s > 1 ? void 0 : s ? A(i, t) : i, r = e.length - 1, c; r >= 0; r--)
-    (c = e[r]) && (a = (s ? c(i, t, a) : c(a)) || a);
-  return s && a && x(i, t, a), a;
+var A = Object.defineProperty, R = Object.getOwnPropertyDescriptor, u = (e, i, t, s) => {
+  for (var a = s > 1 ? void 0 : s ? R(i, t) : i, r = e.length - 1, n; r >= 0; r--)
+    (n = e[r]) && (a = (s ? n(i, t, a) : n(a)) || a);
+  return s && a && A(i, t, a), a;
 };
 let l = class extends f {
   constructor() {
@@ -53,7 +53,7 @@ let l = class extends f {
     if (this.readonly) return;
     const e = await this.getContext(g);
     if (!e) return;
-    const i = e.open(this, w, {
+    const i = e.open(this, x, {
       data: {
         allowedResourceTypes: this._allowedResourceTypes,
         currentResourceId: (t = this._value) == null ? void 0 : t.resourceId
@@ -62,10 +62,10 @@ let l = class extends f {
     try {
       const r = await i.onSubmit();
       if (r != null && r.selection) {
-        const c = r.selection.resourceId === ((s = this._value) == null ? void 0 : s.resourceId) ? (a = this._value) == null ? void 0 : a.altText : null;
+        const n = r.selection.resourceId === ((s = this._value) == null ? void 0 : s.resourceId) ? (a = this._value) == null ? void 0 : a.altText : null;
         this._updateValue({
           ...r.selection,
-          altText: c ?? null
+          altText: n ?? null
         });
       }
     } catch {
@@ -100,14 +100,14 @@ let l = class extends f {
           </uui-button>
         </div>
       `;
-    const e = this._liveDetail, i = e !== null && !e.isAvailable, t = (e == null ? void 0 : e.previewUrl) ?? (e == null ? void 0 : e.thumbnailUrl), s = (e != null && e.isAvailable ? e.title : this._value.title) ?? `Resource #${this._value.resourceId}`, a = (e == null ? void 0 : e.defaultAltText) ?? s;
+    const e = this._liveDetail, i = e !== null && !e.isAvailable, t = w((e == null ? void 0 : e.previewUrl) ?? (e == null ? void 0 : e.thumbnailUrl)), s = (e != null && e.isAvailable ? e.title : this._value.title) ?? `Resource #${this._value.resourceId}`, a = (e == null ? void 0 : e.defaultAltText) ?? s;
     return o`
       <div class="selected-card ${i ? "unavailable" : ""}">
-        ${this._loadingLive ? o`<uui-loader-bar></uui-loader-bar>` : n}
+        ${this._loadingLive ? o`<uui-loader-bar></uui-loader-bar>` : c}
 
         <div class="card-body">
           <div class="preview-box">
-            ${t ? o`<img src=${t} alt=${s} />` : o`<uui-icon name="icon-document" class="doc-icon"></uui-icon>`}
+            ${t ? o`<img src=${t} alt=${s} referrerpolicy="no-referrer" />` : o`<uui-icon name="icon-document" class="doc-icon"></uui-icon>`}
           </div>
 
           <div class="info-box">
@@ -115,7 +115,7 @@ let l = class extends f {
               <strong class="asset-title">${s}</strong>
               <div class="badges">
                 <uui-tag look="secondary">Ref #${this._value.resourceId}</uui-tag>
-                ${this._value.fileExtension ? o`<uui-tag look="outline">${this._value.fileExtension.toUpperCase()}</uui-tag>` : n}
+                ${this._value.fileExtension ? o`<uui-tag look="outline">${this._value.fileExtension.toUpperCase()}</uui-tag>` : c}
                 ${i ? o`<uui-tag color="warning">Unavailable in DAM</uui-tag>` : o`<uui-tag color="positive" look="outline">Live in DAM</uui-tag>`}
               </div>
             </div>
@@ -124,17 +124,17 @@ let l = class extends f {
                   <div class="warning-banner">
                     ${(e == null ? void 0 : e.unavailableReason) ?? "This asset was deleted, archived, or restricted in ResourceSpace."}
                   </div>
-                ` : n}
+                ` : c}
 
-            <div class="alt-field">
-              <label for="rs-alt-input">Editorial alt text override (optional — defaults to DAM caption)</label>
+            <label class="alt-field">
+              <span>Editorial alt text override (optional — defaults to DAM caption)</span>
               <uui-input
-                id="rs-alt-input"
+                label="Editorial alt text override"
                 placeholder=${a}
                 .value=${this._value.altText ?? ""}
                 ?readonly=${this.readonly}
                 @change=${this._onAltTextChange}></uui-input>
-            </div>
+            </label>
 
             <div class="actions-row">
               <uui-button
@@ -245,7 +245,7 @@ l.styles = v`
       gap: 4px;
     }
 
-    .alt-field label {
+    .alt-field span {
       font-size: 12px;
       color: var(--uui-color-text-alt);
     }
@@ -281,9 +281,8 @@ u([
 l = u([
   h("resourcespace-asset-picker")
 ], l);
-const I = l;
+const C = l;
 export {
   l as ResourceSpaceAssetPickerElement,
-  I as default
+  C as default
 };
-//# sourceMappingURL=resourcespace-picker.element-DZLf9yGZ.js.map

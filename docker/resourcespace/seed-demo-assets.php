@@ -18,14 +18,20 @@ $forceReseed = (getenv('RS_FORCE_RESEED') === '1' || getenv('RS_FORCE_RESEED') =
 $wroteConfig = false;
 
 if (!file_exists($configPath) || filesize($configPath) < 50) {
+    $exportedHost = var_export($dbHost, true);
+    $exportedUser = var_export($dbUser, true);
+    $exportedPass = var_export($dbPass, true);
+    $exportedDb = var_export($dbName, true);
+    $exportedBaseUrl = var_export($baseUrl, true);
+
     $configPhp = <<<PHP
 <?php
-\$mysql_server = '{$dbHost}';
-\$mysql_username = '{$dbUser}';
-\$mysql_password = '{$dbPass}';
-\$mysql_db = '{$dbName}';
+\$mysql_server = {$exportedHost};
+\$mysql_username = {$exportedUser};
+\$mysql_password = {$exportedPass};
+\$mysql_db = {$exportedDb};
 
-\$baseurl = '{$baseUrl}';
+\$baseurl = {$exportedBaseUrl};
 \$email_from = 'dam@localhost.invalid';
 \$email_notify = 'dam@localhost.invalid';
 \$applicationname = 'Civic Museum ResourceSpace DAM';
@@ -46,7 +52,9 @@ if (!file_exists($configPath) || filesize($configPath) < 50) {
 PHP;
 
     file_put_contents($configPath, $configPhp);
+    @chmod($configPath, 0640);
     file_put_contents($persistedConfigPath, $configPhp);
+    @chmod($persistedConfigPath, 0640);
     $wroteConfig = true;
 }
 

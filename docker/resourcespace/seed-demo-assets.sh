@@ -16,6 +16,11 @@ if ! ls "${SCRIPT_DIR}/seed-assets/"*.jpg >/dev/null 2>&1; then
   "${SCRIPT_DIR}/fetch-royalty-free-assets.sh"
 fi
 
+cleanup() {
+  docker exec "${CONTAINER_NAME}" rm -rf /tmp/rs_demo_seed /tmp/seed-demo-assets.php >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
 echo "Copying seeder and royalty-free CC0 museum assets into ${CONTAINER_NAME}..."
 docker exec "${CONTAINER_NAME}" mkdir -p /tmp/rs_demo_seed
 docker cp "${SCRIPT_DIR}/seed-assets/." "${CONTAINER_NAME}:/tmp/rs_demo_seed/"

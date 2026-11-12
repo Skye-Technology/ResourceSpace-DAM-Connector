@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using SkyeTechnology.Umbraco.ResourceSpace.Abstractions;
 using SkyeTechnology.Umbraco.ResourceSpace.Abstractions.Models;
 using SkyeTechnology.Umbraco.ResourceSpace.Configuration;
+using SkyeTechnology.Umbraco.ResourceSpace.Internal;
 
 namespace SkyeTechnology.Umbraco.ResourceSpace.ResourceSpace;
 
@@ -49,9 +50,9 @@ public sealed class ResourceSpaceDamConnector : IDamConnector
 
         var parameters = new List<KeyValuePair<string, string?>>
         {
-            new("search", request.Query ?? string.Empty),
-            new("restypes", request.ResourceTypes ?? string.Empty),
-            new("order_by", string.IsNullOrWhiteSpace(request.OrderBy) ? "relevance" : request.OrderBy),
+            new("search", DamSecurityGuards.SanitizeSearchQuery(request.Query)),
+            new("restypes", DamSecurityGuards.SanitizeResourceTypesFilter(request.ResourceTypes)),
+            new("order_by", DamSecurityGuards.NormalizeOrderBy(request.OrderBy)),
             new("archive", "0"),
             new("fetchrows", $"{skip},{take}"),
             new("sort", request.SortDescending ? "desc" : "asc"),
@@ -149,12 +150,11 @@ public sealed class ResourceSpaceDamConnector : IDamConnector
         string resourceId,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(resourceId))
+        if (!DamSecurityGuards.TryNormalizeResourceId(resourceId, out var normalizedId))
         {
             return null;
         }
 
-        var normalizedId = resourceId.Trim();
         var cacheKey = $"rs:asset:{normalizedId}";
 
         if (_cache.TryGetValue<CachedAssetEntry>(cacheKey, out var cached) && cached is not null)
@@ -199,9 +199,9 @@ public sealed class ResourceSpaceDamConnector : IDamConnector
     /// </summary>
     public void EvictAssetCache(string resourceId)
     {
-        if (!string.IsNullOrWhiteSpace(resourceId))
+        if (DamSecurityGuards.TryNormalizeResourceId(resourceId, out var normalizedId))
         {
-            _cache.Remove($"rs:asset:{resourceId.Trim()}");
+            _cache.Remove($"rs:asset:{normalizedId}");
         }
     }
 
@@ -324,12 +324,12 @@ public sealed class ResourceSpaceDamConnector : IDamConnector
 
                 var code = GetString(sizeItem, "size_code") ?? GetString(sizeItem, "id") ?? string.Empty;
                 var rawUrl = GetString(sizeItem, "url");
-                if (string.IsNullOrWhiteSpace(rawUrl))
+                var url = RewritePublicUrl(rawUrl, options);
+                if (string.IsNullOrWhiteSpace(url))
                 {
                     continue;
                 }
 
-                var url = RewritePublicUrl(rawUrl, options)!;
                 var width = GetInt(sizeItem, "width");
                 var height = GetInt(sizeItem, "height");
                 var sizeBytes = GetLong(sizeItem, "file_size") ?? GetLong(sizeItem, "filesize");
@@ -497,27 +497,7 @@ public sealed class ResourceSpaceDamConnector : IDamConnector
             Metadata: new Dictionary<string, string>());
 
     internal static string? RewritePublicUrl(string? url, ResourceSpaceOptions options)
-    {
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            return null;
-        }
-
-        if (string.IsNullOrWhiteSpace(options.PublicBaseUrl))
-        {
-            return url;
-        }
-
-        var internalBase = options.BaseUrl.TrimEnd('/');
-        var publicBase = options.PublicBaseUrl.TrimEnd('/');
-
-        if (url.StartsWith(internalBase, StringComparison.OrdinalIgnoreCase))
-        {
-            return string.Concat(publicBase, url.AsSpan(internalBase.Length));
-        }
-
-        return url;
-    }
+        => DamSecurityGuards.RewritePublicUrl(url, options.BaseUrl, options.PublicBaseUrl);
 
     private static string? TryGetRenditionUrl(IReadOnlyDictionary<string, DamRendition> renditions, params string[] codes)
     {

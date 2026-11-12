@@ -236,7 +236,8 @@
                         <img src="@reportPdf.PreviewUrl"
                              alt="Cover preview for @reportPdf.Title"
                              class="pdf-thumb"
-                             loading="lazy" />
+                             loading="lazy"
+                             referrerpolicy="no-referrer" />
                     }
                     <div class="pdf-body">
                         <h3 style="margin:0 0 0.4rem;font-size:1.15rem;">@reportPdf.Title</h3>
@@ -252,7 +253,7 @@
                         </div>
                         @if (!string.IsNullOrWhiteSpace(reportPdf.Url))
                         {
-                            <a class="btn" href="@reportPdf.Url" target="_blank" rel="noopener">
+                            <a class="btn" href="@reportPdf.Url" target="_blank" rel="noopener noreferrer">
                                 Open Original PDF from DAM
                             </a>
                         }
@@ -278,8 +279,8 @@
         <footer>
             <span>CC0 1.0 Public Domain museum artworks streamed live from ResourceSpace 11.0 without copying into <code>wwwroot/media</code>.</span>
             <span>
-                <a href="/umbraco" target="_blank">Umbraco Backoffice</a> ·
-                <a href="/umbraco/delivery/api/v2/content" target="_blank">Content Delivery API v2 JSON</a>
+                <a href="/umbraco" target="_blank" rel="noopener noreferrer">Umbraco Backoffice</a> ·
+                <a href="/umbraco/delivery/api/v2/content" target="_blank" rel="noopener noreferrer">Content Delivery API v2 JSON</a>
             </span>
         </footer>
     </main>

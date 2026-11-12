@@ -14,7 +14,8 @@
     "Url": "https://skye.technology",
     "SyncContributorsFromRepository": true
   },
-  "DocumentationUrl": "https://skye.technology",
+  "DocumentationUrl": "https://github.com/Skye-Technology/ResourceSpace-DAM-Connector#readme",
+  "IssueTrackerUrl": "https://github.com/Skye-Technology/ResourceSpace-DAM-Connector/issues",
   "Tags": [
     "dam",
     "resourcespace",

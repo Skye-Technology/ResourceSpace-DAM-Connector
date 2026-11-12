@@ -1,6 +1,6 @@
 # SkyeTechnology.Umbraco.ResourceSpace
 
-Bring Your Own DAM to **Umbraco 17+**: search, preview, and pick **ResourceSpace** assets directly in the Bellissima backoffice and deliver responsive renditions to **Razor views** and the **Content Delivery API** without copying files into `wwwroot/media`.
+Bring Your Own DAM to **Umbraco 17+**: search, preview, and pick **ResourceSpace** assets directly in the Bellissima backoffice (`@skye-technology/umbraco-resourcespace-client`) and deliver responsive renditions to **Razor views** and the **Content Delivery API v2** without copying files into `wwwroot/media`.
 
 Built and maintained by **[Skye Technology](https://skye.technology)**.
 
@@ -10,7 +10,7 @@ Built and maintained by **[Skye Technology](https://skye.technology)**.
 dotnet add package SkyeTechnology.Umbraco.ResourceSpace
 ```
 
-Services, Management API endpoints, Property Value Converters, and backoffice extensions are registered automatically via `ResourceSpaceComposer`.
+Services (`AddResourceSpaceDam()` / `IDamConnector`), Management API endpoints (`/umbraco/management/api/v1/resourcespace`), Property Value Converters (`IPropertyValueConverter` + `IDeliveryApiPropertyValueConverter`), and Bellissima backoffice extensions (`<resourcespace-asset-picker>` and `<resourcespace-picker-modal>`) are registered automatically via `ResourceSpaceComposer`.
 
 ## Configuration (`appsettings.json` / Environment Variables)
 
@@ -22,9 +22,16 @@ Services, Management API endpoints, Property Value Converters, and backoffice ex
     "ApiUser": "umbraco_api",
     "ApiKey": "<configure-via-user-secrets-or-key-vault>",
     "DefaultDeliverySize": "scr",
+    "PreviewSizes": ["thm", "pre", "scr", "hpr"],
+    "TitleFieldId": 8,
+    "CaptionFieldId": 18,
+    "CreditFieldId": 10,
     "BlockRestrictedAssets": true,
-    "AssetCacheDuration": "00:05:00",
-    "MissingAssetCacheDuration": "00:00:30"
+    "AllowedArchiveStates": [0],
+    "FallbackImageUrl": null,
+    "AssetCacheDuration": "00:10:00",
+    "MissingAssetCacheDuration": "00:01:00",
+    "HttpTimeout": "00:00:10"
   }
 }
 ```
@@ -46,8 +53,9 @@ Render responsive DAM assets in any view:
 }
 <dam-image asset="@hero"
            size="scr"
-           sizes="(max-width: 980px) 100vw, 980px"
-           loading="eager" />
+           sizes="(max-width: 1080px) 100vw, 1080px"
+           loading="eager"
+           css-class="hero-image" />
 ```
 
 ## License

@@ -7,6 +7,7 @@ using Umbraco.Cms.Core.PropertyEditors.DeliveryApi;
 using SkyeTechnology.Umbraco.ResourceSpace.Abstractions;
 using SkyeTechnology.Umbraco.ResourceSpace.Abstractions.Models;
 using SkyeTechnology.Umbraco.ResourceSpace.Configuration;
+using SkyeTechnology.Umbraco.ResourceSpace.Internal;
 using SkyeTechnology.Umbraco.ResourceSpace.Models;
 
 namespace SkyeTechnology.Umbraco.ResourceSpace.PropertyEditors;
@@ -124,7 +125,8 @@ public sealed class ResourceSpacePropertyValueConverter
         var configDict = propertyType?.DataType.ConfigurationObject as IDictionary<string, object>;
 
         var defaultSize = GetConfigString(configDict, "defaultRenditionSize") ?? options.DefaultDeliverySize;
-        var fallbackUrl = GetConfigString(configDict, "fallbackImageUrl") ?? options.FallbackImageUrl;
+        var fallbackUrl = DamSecurityGuards.SanitizeHttpOrRelativeUrl(
+            GetConfigString(configDict, "fallbackImageUrl") ?? options.FallbackImageUrl);
 
         // Resolve live DAM metadata & renditions (served from IMemoryCache on warm requests)
         var liveDetail = _damConnector.GetAssetAsync(reference.ResourceId).GetAwaiter().GetResult();
@@ -179,7 +181,7 @@ public sealed class ResourceSpacePropertyValueConverter
 
         // Case 3: Asset is live and accessible — pick primary rendition and build responsive srcset
         var isImage = IsImageExtension(liveDetail.FileExtension);
-        var primaryUrl = ResolvePrimaryUrl(liveDetail, defaultSize, isImage);
+        var primaryUrl = DamSecurityGuards.SanitizeHttpOrRelativeUrl(ResolvePrimaryUrl(liveDetail, defaultSize, isImage));
         var srcSet = isImage ? BuildResponsiveSrcSet(liveDetail.Renditions) : null;
 
         return new PublishedDamAsset
@@ -193,8 +195,8 @@ public sealed class ResourceSpacePropertyValueConverter
             FileExtension = liveDetail.FileExtension,
             ResourceType = liveDetail.ResourceType,
             Url = primaryUrl,
-            PreviewUrl = liveDetail.PreviewUrl,
-            OriginalUrl = liveDetail.OriginalUrl,
+            PreviewUrl = DamSecurityGuards.SanitizeHttpOrRelativeUrl(liveDetail.PreviewUrl),
+            OriginalUrl = DamSecurityGuards.SanitizeHttpOrRelativeUrl(liveDetail.OriginalUrl),
             SrcSet = srcSet,
             Width = liveDetail.OriginalWidth ?? reference.Width,
             Height = liveDetail.OriginalHeight ?? reference.Height,
@@ -231,12 +233,14 @@ public sealed class ResourceSpacePropertyValueConverter
     private static string? BuildResponsiveSrcSet(IReadOnlyDictionary<string, DamRendition> renditions)
     {
         var candidates = renditions.Values
-            .Where(r => r.Width is > 0 && !string.IsNullOrWhiteSpace(r.Url)
-                        && (r.FileExtension is null or "jpg" or "jpeg" or "png" or "webp" or "avif"))
-            .GroupBy(r => r.Width!.Value)
+            .Select(r => (Rendition: r, SafeUrl: DamSecurityGuards.SanitizeForSrcSet(r.Url)))
+            .Where(x => x.Rendition.Width is > 0
+                        && x.SafeUrl is not null
+                        && (x.Rendition.FileExtension is null or "jpg" or "jpeg" or "png" or "webp" or "avif"))
+            .GroupBy(x => x.Rendition.Width!.Value)
             .Select(g => g.First())
-            .OrderBy(r => r.Width!.Value)
-            .Select(r => $"{r.Url} {r.Width}w")
+            .OrderBy(x => x.Rendition.Width!.Value)
+            .Select(x => $"{x.SafeUrl} {x.Rendition.Width}w")
             .ToList();
 
         return candidates.Count > 0 ? string.Join(", ", candidates) : null;

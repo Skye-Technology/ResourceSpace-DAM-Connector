@@ -10,7 +10,7 @@ export default defineConfig({
     },
     outDir: '../wwwroot/App_Plugins/ResourceSpace',
     emptyOutDir: true,
-    sourcemap: true,
+    sourcemap: false,
     rollupOptions: {
       external: [/^@umbraco/],
     },

@@ -34,7 +34,14 @@ public sealed class ResourceSpaceClient
         CancellationToken cancellationToken = default)
     {
         var options = _optionsMonitor.CurrentValue;
-        var baseUrl = options.BaseUrl.TrimEnd('/');
+        var baseUrl = options.BaseUrl.Trim().TrimEnd('/');
+
+        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri)
+            || (baseUri.Scheme != Uri.UriSchemeHttp && baseUri.Scheme != Uri.UriSchemeHttps)
+            || string.IsNullOrWhiteSpace(baseUri.Host))
+        {
+            throw new InvalidOperationException("ResourceSpace BaseUrl must be an absolute HTTP or HTTPS URI.");
+        }
 
         var signedRelativeUrl = ResourceSpaceRequestSigner.BuildSignedRelativeUrl(
             options.ApiUser,
@@ -44,15 +51,22 @@ public sealed class ResourceSpaceClient
 
         var requestUri = new Uri($"{baseUrl}{signedRelativeUrl}", UriKind.Absolute);
 
-        using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
+        using var response = await _httpClient.GetAsync(
+            requestUri,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
         var rawBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
             if (response.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden)
             {
+                _logger.LogError(
+                    "ResourceSpace rejected API call '{Function}' with HTTP {StatusCode}.",
+                    functionName,
+                    (int)response.StatusCode);
                 throw new InvalidOperationException(
-                    $"ResourceSpace rejected the API request (HTTP {(int)response.StatusCode}): {rawBody.Trim()}");
+                    $"ResourceSpace rejected the API request (HTTP {(int)response.StatusCode}).");
             }
 
             _logger.LogWarning(
@@ -81,7 +95,7 @@ public sealed class ResourceSpaceClient
                 functionName,
                 preview);
             throw new InvalidOperationException(
-                $"ResourceSpace API returned a non-JSON response for '{functionName}': {preview}",
+                $"ResourceSpace API returned a non-JSON response for '{functionName}'.",
                 ex);
         }
     }

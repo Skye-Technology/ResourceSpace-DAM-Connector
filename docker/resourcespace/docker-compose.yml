@@ -17,7 +17,7 @@ services:
     volumes:
       - rs_filestore:/var/www/html/filestore
     ports:
-      - "${RS_PORT:-8085}:80"
+      - "${RS_BIND_IP:-127.0.0.1}:${RS_PORT:-8085}:80"
 
   mariadb:
     image: mariadb:11.4

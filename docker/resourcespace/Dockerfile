@@ -49,10 +49,12 @@ RUN chmod +x /etc/cron.daily/resourcespace
 WORKDIR /var/www/html
 
 RUN rm -f index.html \
- && svn co -q https://svn.resourcespace.com/svn/rs/releases/11.0 . \
+ && svn export --force -q https://svn.resourcespace.com/svn/rs/releases/11.0 . \
  && mkdir -p filestore \
- && chown -R www-data:www-data /var/www/html \
- && chmod -R 775 filestore include
+ && chown -R root:www-data /var/www/html \
+ && chmod -R 755 /var/www/html \
+ && chown -R www-data:www-data /var/www/html/filestore /var/www/html/include \
+ && chmod -R 775 /var/www/html/filestore /var/www/html/include
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

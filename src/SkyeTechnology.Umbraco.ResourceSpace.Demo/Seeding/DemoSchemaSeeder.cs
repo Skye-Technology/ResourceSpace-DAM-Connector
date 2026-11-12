@@ -70,7 +70,7 @@ public sealed class DemoSchemaSeeder : INotificationAsyncHandler<UmbracoApplicat
         UmbracoApplicationStartedNotification notification,
         CancellationToken cancellationToken)
     {
-        if (_runtimeState.Level != RuntimeLevel.Run)
+        if (_runtimeState.Level != RuntimeLevel.Run || !_hostEnvironment.IsDevelopment())
         {
             return;
         }

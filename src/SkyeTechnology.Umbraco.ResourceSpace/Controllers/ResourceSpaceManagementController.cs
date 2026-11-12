@@ -1,12 +1,15 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Api.Management.Controllers;
 using Umbraco.Cms.Api.Management.Routing;
 using SkyeTechnology.Umbraco.ResourceSpace.Abstractions;
 using SkyeTechnology.Umbraco.ResourceSpace.Abstractions.Models;
 using SkyeTechnology.Umbraco.ResourceSpace.Configuration;
+using SkyeTechnology.Umbraco.ResourceSpace.Internal;
 using SkyeTechnology.Umbraco.ResourceSpace.ResourceSpace;
 
 namespace SkyeTechnology.Umbraco.ResourceSpace.Controllers;
@@ -23,18 +26,22 @@ public sealed class ResourceSpaceManagementController : ManagementApiControllerB
 {
     private readonly IDamConnector _damConnector;
     private readonly IOptionsMonitor<ResourceSpaceOptions> _optionsMonitor;
+    private readonly ILogger<ResourceSpaceManagementController> _logger;
 
     public ResourceSpaceManagementController(
         IDamConnector damConnector,
-        IOptionsMonitor<ResourceSpaceOptions> optionsMonitor)
+        IOptionsMonitor<ResourceSpaceOptions> optionsMonitor,
+        ILogger<ResourceSpaceManagementController>? logger = null)
     {
         _damConnector = damConnector;
         _optionsMonitor = optionsMonitor;
+        _logger = logger ?? NullLogger<ResourceSpaceManagementController>.Instance;
     }
 
     [HttpGet("search")]
     [MapToApiVersion("1.0")]
     [ProducesResponseType(typeof(DamSearchResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status502BadGateway)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status503ServiceUnavailable)]
     [EndpointSummary("Searches ResourceSpace assets with preview thumbnails.")]
     public async Task<IActionResult> Search(
@@ -65,10 +72,11 @@ public sealed class ResourceSpaceManagementController : ManagementApiControllerB
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            _logger.LogError(ex, "ResourceSpace search request failed.");
             return StatusCode(StatusCodes.Status502BadGateway, new ProblemDetails
             {
                 Title = "ResourceSpace query failed",
-                Detail = ex.Message,
+                Detail = "Unable to complete the ResourceSpace query. Verify DAM connectivity and API credentials in server logs.",
                 Status = StatusCodes.Status502BadGateway,
             });
         }
@@ -77,6 +85,7 @@ public sealed class ResourceSpaceManagementController : ManagementApiControllerB
     [HttpGet("assets/{resourceId}")]
     [MapToApiVersion("1.0")]
     [ProducesResponseType(typeof(DamAssetDetail), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [EndpointSummary("Gets full metadata and available renditions for a ResourceSpace asset.")]
     public async Task<IActionResult> GetAsset(
@@ -88,7 +97,17 @@ public sealed class ResourceSpaceManagementController : ManagementApiControllerB
             return unconfiguredResult;
         }
 
-        var detail = await _damConnector.GetAssetAsync(resourceId, cancellationToken);
+        if (!DamSecurityGuards.TryNormalizeResourceId(resourceId, out var normalizedId))
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid resource identifier",
+                Detail = "Resource ID must contain 1–64 ASCII alphanumeric, hyphen, or underscore characters.",
+                Status = StatusCodes.Status400BadRequest,
+            });
+        }
+
+        var detail = await _damConnector.GetAssetAsync(normalizedId, cancellationToken);
         if (detail is null)
         {
             return NotFound();
@@ -100,17 +119,34 @@ public sealed class ResourceSpaceManagementController : ManagementApiControllerB
     [HttpPost("assets/{resourceId}/refresh")]
     [MapToApiVersion("1.0")]
     [ProducesResponseType(typeof(DamAssetDetail), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [EndpointSummary("Evicts cached DAM metadata for an asset and fetches fresh state from ResourceSpace.")]
     public async Task<IActionResult> RefreshAsset(
         [FromRoute] string resourceId,
         CancellationToken cancellationToken = default)
     {
-        if (_damConnector is ResourceSpaceDamConnector rsConnector)
+        if (EnsureConfigured() is { } unconfiguredResult)
         {
-            rsConnector.EvictAssetCache(resourceId);
+            return unconfiguredResult;
         }
 
-        var detail = await _damConnector.GetAssetAsync(resourceId, cancellationToken);
+        if (!DamSecurityGuards.TryNormalizeResourceId(resourceId, out var normalizedId))
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid resource identifier",
+                Detail = "Resource ID must contain 1–64 ASCII alphanumeric, hyphen, or underscore characters.",
+                Status = StatusCodes.Status400BadRequest,
+            });
+        }
+
+        if (_damConnector is ResourceSpaceDamConnector rsConnector)
+        {
+            rsConnector.EvictAssetCache(normalizedId);
+        }
+
+        var detail = await _damConnector.GetAssetAsync(normalizedId, cancellationToken);
         return detail is null ? NotFound() : Ok(detail);
     }
 

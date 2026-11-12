@@ -17,6 +17,7 @@ import type {
   ResourceSpacePickerModalData,
   ResourceSpacePickerModalValue,
 } from './resourcespace-picker-modal.token.js';
+import { sanitizeAssetUrl } from '../utils/url.js';
 
 const PAGE_SIZE = 18;
 
@@ -280,6 +281,7 @@ export class ResourceSpacePickerModalElement extends UmbModalBaseElement<
 
   private _renderCard(item: DamAssetSummary) {
     const isSelected = this._activeSummary?.resourceId === item.resourceId;
+    const safeThumb = sanitizeAssetUrl(item.thumbnailUrl);
     return html`
       <button
         type="button"
@@ -289,8 +291,8 @@ export class ResourceSpacePickerModalElement extends UmbModalBaseElement<
           void this._inspectItem(item).then(() => this._confirmSelection());
         }}>
         <div class="thumb-frame">
-          ${item.thumbnailUrl
-            ? html`<img src=${item.thumbnailUrl} alt=${item.title} loading="lazy" />`
+          ${safeThumb
+            ? html`<img src=${safeThumb} alt=${item.title} loading="lazy" referrerpolicy="no-referrer" />`
             : html`<uui-icon name="icon-document" class="fallback-icon"></uui-icon>`}
           <span class="ext-badge">${(item.fileExtension || 'file').toUpperCase()}</span>
         </div>
@@ -308,7 +310,9 @@ export class ResourceSpacePickerModalElement extends UmbModalBaseElement<
     }
 
     const detail = this._activeDetail;
-    const previewUrl = detail?.previewUrl ?? this._activeSummary.previewUrl ?? this._activeSummary.thumbnailUrl;
+    const previewUrl = sanitizeAssetUrl(
+      detail?.previewUrl ?? this._activeSummary.previewUrl ?? this._activeSummary.thumbnailUrl
+    );
     const renditions = detail ? Object.values(detail.renditions) : [];
     const metadataEntries = detail ? Object.entries(detail.metadata) : [];
 
@@ -316,7 +320,7 @@ export class ResourceSpacePickerModalElement extends UmbModalBaseElement<
       <div class="inspector-content">
         <div class="inspector-preview">
           ${previewUrl
-            ? html`<img src=${previewUrl} alt=${detail?.title ?? this._activeSummary.title} />`
+            ? html`<img src=${previewUrl} alt=${detail?.title ?? this._activeSummary.title} referrerpolicy="no-referrer" />`
             : html`<uui-icon name="icon-document" class="fallback-icon"></uui-icon>`}
         </div>
 

@@ -1,20 +1,20 @@
-import { nothing as u, html as i, css as h, state as l, customElement as m } from "@umbraco-cms/backoffice/external/lit";
-import { UMB_AUTH_CONTEXT as v } from "@umbraco-cms/backoffice/auth";
-import { UmbModalBaseElement as _ } from "@umbraco-cms/backoffice/modal";
-import { R as g } from "./resourcespace-api.client-eLZvwiWC.js";
-var y = Object.defineProperty, b = Object.getOwnPropertyDescriptor, o = (e, t, s, c) => {
-  for (var r = c > 1 ? void 0 : c ? b(t, s) : t, n = e.length - 1, d; n >= 0; n--)
-    (d = e[n]) && (r = (c ? d(t, s, r) : d(r)) || r);
-  return c && r && y(t, s, r), r;
+import { nothing as n, html as i, css as m, state as l, customElement as v } from "@umbraco-cms/backoffice/external/lit";
+import { UMB_AUTH_CONTEXT as _ } from "@umbraco-cms/backoffice/auth";
+import { UmbModalBaseElement as g } from "@umbraco-cms/backoffice/modal";
+import { R as y, s as h } from "./url-CSrW_WFR.js";
+var b = Object.defineProperty, f = Object.getOwnPropertyDescriptor, c = (e, t, s, o) => {
+  for (var r = o > 1 ? void 0 : o ? f(t, s) : t, u = e.length - 1, d; u >= 0; u--)
+    (d = e[u]) && (r = (o ? d(t, s, r) : d(r)) || r);
+  return o && r && b(t, s, r), r;
 };
 const p = 18;
-let a = class extends _ {
+let a = class extends g {
   constructor() {
     super(...arguments), this._query = "", this._selectedType = "", this._resourceTypes = [], this._items = [], this._total = 0, this._skip = 0, this._loading = !1, this._error = null, this._activeSummary = null, this._activeDetail = null, this._loadingDetail = !1;
   }
   connectedCallback() {
-    super.connectedCallback(), this.consumeContext(v, (e) => {
-      e && (this._api = new g(() => e.getLatestToken()), this._initialize());
+    super.connectedCallback(), this.consumeContext(_, (e) => {
+      e && (this._api = new y(() => e.getLatestToken()), this._initialize());
     });
   }
   async _initialize() {
@@ -24,10 +24,10 @@ let a = class extends _ {
       try {
         const s = await this._api.getResourceTypes();
         if ((t = this.data) != null && t.allowedResourceTypes) {
-          const c = new Set(
+          const o = new Set(
             this.data.allowedResourceTypes.split(",").map((r) => r.trim()).filter(Boolean)
           );
-          this._resourceTypes = s.filter((r) => c.has(r.id));
+          this._resourceTypes = s.filter((r) => o.has(r.id));
         } else
           this._resourceTypes = s;
       } catch {
@@ -47,11 +47,11 @@ let a = class extends _ {
           take: p
         });
         if (this._items = s.items, this._total = s.total, !this._activeSummary && s.items.length > 0) {
-          const c = s.items.find((r) => {
-            var n;
-            return r.resourceId === ((n = this.data) == null ? void 0 : n.currentResourceId);
+          const o = s.items.find((r) => {
+            var u;
+            return r.resourceId === ((u = this.data) == null ? void 0 : u.currentResourceId);
           }) ?? s.items[0];
-          this._inspectItem(c);
+          this._inspectItem(o);
         }
       } catch (s) {
         this._error = s instanceof Error ? s.message : "Unable to query ResourceSpace.", this._items = [], this._total = 0;
@@ -116,7 +116,7 @@ let a = class extends _ {
 
             ${this._resourceTypes.length > 0 ? i`
                   <div class="type-pills" role="group" aria-label="Filter by resource type">
-                    ${(e = this.data) != null && e.allowedResourceTypes ? u : i`
+                    ${(e = this.data) != null && e.allowedResourceTypes ? n : i`
                           <uui-button
                             compact
                             look=${this._selectedType === "" ? "primary" : "secondary"}
@@ -133,10 +133,10 @@ let a = class extends _ {
                       `
     )}
                   </div>
-                ` : u}
+                ` : n}
           </div>
 
-          ${this._loading ? i`<uui-loader-bar></uui-loader-bar>` : u}
+          ${this._loading ? i`<uui-loader-bar></uui-loader-bar>` : n}
 
           ${this._error ? i`
                 <uui-box class="error-box">
@@ -169,7 +169,7 @@ let a = class extends _ {
                               ?disabled=${this._skip + p >= this._total || this._loading}
                               @click=${() => this._executeSearch(this._skip + p)}></uui-button>
                           </div>
-                        ` : u}
+                        ` : n}
                   </div>
 
                   <aside class="inspector-pane">
@@ -198,8 +198,8 @@ let a = class extends _ {
     `;
   }
   _renderCard(e) {
-    var s;
-    const t = ((s = this._activeSummary) == null ? void 0 : s.resourceId) === e.resourceId;
+    var o;
+    const t = ((o = this._activeSummary) == null ? void 0 : o.resourceId) === e.resourceId, s = h(e.thumbnailUrl);
     return i`
       <button
         type="button"
@@ -209,7 +209,7 @@ let a = class extends _ {
       this._inspectItem(e).then(() => this._confirmSelection());
     }}>
         <div class="thumb-frame">
-          ${e.thumbnailUrl ? i`<img src=${e.thumbnailUrl} alt=${e.title} loading="lazy" />` : i`<uui-icon name="icon-document" class="fallback-icon"></uui-icon>`}
+          ${s ? i`<img src=${s} alt=${e.title} loading="lazy" referrerpolicy="no-referrer" />` : i`<uui-icon name="icon-document" class="fallback-icon"></uui-icon>`}
           <span class="ext-badge">${(e.fileExtension || "file").toUpperCase()}</span>
         </div>
         <div class="card-meta">
@@ -222,25 +222,27 @@ let a = class extends _ {
   _renderInspector() {
     if (!this._activeSummary)
       return i`<p class="inspector-placeholder">Select an asset to inspect metadata and renditions.</p>`;
-    const e = this._activeDetail, t = (e == null ? void 0 : e.previewUrl) ?? this._activeSummary.previewUrl ?? this._activeSummary.thumbnailUrl, s = e ? Object.values(e.renditions) : [], c = e ? Object.entries(e.metadata) : [];
+    const e = this._activeDetail, t = h(
+      (e == null ? void 0 : e.previewUrl) ?? this._activeSummary.previewUrl ?? this._activeSummary.thumbnailUrl
+    ), s = e ? Object.values(e.renditions) : [], o = e ? Object.entries(e.metadata) : [];
     return i`
       <div class="inspector-content">
         <div class="inspector-preview">
-          ${t ? i`<img src=${t} alt=${(e == null ? void 0 : e.title) ?? this._activeSummary.title} />` : i`<uui-icon name="icon-document" class="fallback-icon"></uui-icon>`}
+          ${t ? i`<img src=${t} alt=${(e == null ? void 0 : e.title) ?? this._activeSummary.title} referrerpolicy="no-referrer" />` : i`<uui-icon name="icon-document" class="fallback-icon"></uui-icon>`}
         </div>
 
         <h4 class="inspector-title">${(e == null ? void 0 : e.title) ?? this._activeSummary.title}</h4>
         <div class="tag-row">
           <uui-tag look="secondary">Ref #${this._activeSummary.resourceId}</uui-tag>
           <uui-tag look="secondary">${(e == null ? void 0 : e.resourceType) ?? this._activeSummary.resourceType}</uui-tag>
-          ${e != null && e.originalWidth && (e != null && e.originalHeight) ? i`<uui-tag look="outline">${e.originalWidth} × ${e.originalHeight}px</uui-tag>` : u}
+          ${e != null && e.originalWidth && (e != null && e.originalHeight) ? i`<uui-tag look="outline">${e.originalWidth} × ${e.originalHeight}px</uui-tag>` : n}
         </div>
 
-        ${this._loadingDetail ? i`<uui-loader-bar></uui-loader-bar>` : u}
+        ${this._loadingDetail ? i`<uui-loader-bar></uui-loader-bar>` : n}
 
-        ${e != null && e.description ? i`<p class="inspector-desc">${e.description}</p>` : u}
+        ${e != null && e.description ? i`<p class="inspector-desc">${e.description}</p>` : n}
 
-        ${e != null && e.credit ? i`<p class="inspector-credit"><strong>Credit:</strong> ${e.credit}</p>` : u}
+        ${e != null && e.credit ? i`<p class="inspector-credit"><strong>Credit:</strong> ${e.credit}</p>` : n}
 
         ${s.length > 0 ? i`
               <div class="inspector-section">
@@ -255,26 +257,26 @@ let a = class extends _ {
     )}
                 </div>
               </div>
-            ` : u}
+            ` : n}
 
-        ${c.length > 0 ? i`
+        ${o.length > 0 ? i`
               <div class="inspector-section">
                 <h5>DAM Metadata</h5>
                 <dl class="meta-list">
-                  ${c.map(
-      ([r, n]) => i`
+                  ${o.map(
+      ([r, u]) => i`
                       <dt>${r}</dt>
-                      <dd>${n}</dd>
+                      <dd>${u}</dd>
                     `
     )}
                 </dl>
               </div>
-            ` : u}
+            ` : n}
       </div>
     `;
   }
 };
-a.styles = h`
+a.styles = m`
     .picker-shell {
       display: flex;
       flex-direction: column;
@@ -486,45 +488,44 @@ a.styles = h`
       color: var(--uui-color-danger);
     }
   `;
-o([
+c([
   l()
 ], a.prototype, "_query", 2);
-o([
+c([
   l()
 ], a.prototype, "_selectedType", 2);
-o([
+c([
   l()
 ], a.prototype, "_resourceTypes", 2);
-o([
+c([
   l()
 ], a.prototype, "_items", 2);
-o([
+c([
   l()
 ], a.prototype, "_total", 2);
-o([
+c([
   l()
 ], a.prototype, "_skip", 2);
-o([
+c([
   l()
 ], a.prototype, "_loading", 2);
-o([
+c([
   l()
 ], a.prototype, "_error", 2);
-o([
+c([
   l()
 ], a.prototype, "_activeSummary", 2);
-o([
+c([
   l()
 ], a.prototype, "_activeDetail", 2);
-o([
+c([
   l()
 ], a.prototype, "_loadingDetail", 2);
-a = o([
-  m("resourcespace-picker-modal")
+a = c([
+  v("resourcespace-picker-modal")
 ], a);
-const k = a;
+const S = a;
 export {
   a as ResourceSpacePickerModalElement,
-  k as default
+  S as default
 };
-//# sourceMappingURL=resourcespace-picker-modal.element-ehIZ17Ag.js.map

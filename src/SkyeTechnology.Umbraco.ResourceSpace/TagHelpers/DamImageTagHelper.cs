@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using SkyeTechnology.Umbraco.ResourceSpace.Internal;
 using SkyeTechnology.Umbraco.ResourceSpace.Models;
 
 namespace SkyeTechnology.Umbraco.ResourceSpace.TagHelpers;
@@ -23,7 +24,7 @@ public sealed class DamImageTagHelper : TagHelper
 
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        var resolvedUrl = Asset?.GetRenditionUrl(Size);
+        var resolvedUrl = DamSecurityGuards.SanitizeHttpOrRelativeUrl(Asset?.GetRenditionUrl(Size));
         if (Asset is null || string.IsNullOrWhiteSpace(resolvedUrl))
         {
             output.SuppressOutput();

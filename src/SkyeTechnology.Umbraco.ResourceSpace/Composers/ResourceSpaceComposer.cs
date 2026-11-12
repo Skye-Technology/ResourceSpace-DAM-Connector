@@ -21,14 +21,22 @@ public static class ServiceCollectionExtensions
 
         services
             .AddOptions<ResourceSpaceOptions>()
-            .BindConfiguration(ResourceSpaceOptions.SectionName);
+            .BindConfiguration(ResourceSpaceOptions.SectionName)
+            .ValidateDataAnnotations();
 
-        services.AddHttpClient<ResourceSpaceClient>((sp, httpClient) =>
-        {
-            var opts = sp.GetRequiredService<IOptionsMonitor<ResourceSpaceOptions>>().CurrentValue;
-            httpClient.Timeout = opts.HttpTimeout > TimeSpan.Zero ? opts.HttpTimeout : TimeSpan.FromSeconds(10);
-            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("SkyeTechnology-Umbraco-ResourceSpace/1.0");
-        });
+        services
+            .AddHttpClient<ResourceSpaceClient>((sp, httpClient) =>
+            {
+                var opts = sp.GetRequiredService<IOptionsMonitor<ResourceSpaceOptions>>().CurrentValue;
+                httpClient.Timeout = opts.HttpTimeout > TimeSpan.Zero ? opts.HttpTimeout : TimeSpan.FromSeconds(10);
+                httpClient.MaxResponseContentBufferSize = 5 * 1024 * 1024; // 5 MB cap for JSON metadata responses
+                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("SkyeTechnology-Umbraco-ResourceSpace/1.0");
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+            {
+                AllowAutoRedirect = false,
+            })
+            .RemoveAllLoggers();
 
         services.TryAddSingleton<IDamConnector, ResourceSpaceDamConnector>();
 

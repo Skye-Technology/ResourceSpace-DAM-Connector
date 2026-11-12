@@ -14,6 +14,7 @@ TestResults/
 .nuget/
 **/.nuget/
 .local/
+**/.local/
 Library/
 
 ## Umbraco runtime & local database
@@ -23,6 +24,11 @@ umbraco/mediacache/
 **/umbraco/Data/
 **/umbraco/Logs/
 **/umbraco/mediacache/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
 **/wwwroot/media/*
 !**/wwwroot/media/.gitkeep
 appsettings.Local.json
@@ -38,5 +44,7 @@ npm-debug.log*
 
 ## Docker local overrides
 .env
+.env.*
 docker/resourcespace/.env
+docker/resourcespace/.env.*
 docker/resourcespace/config.php
